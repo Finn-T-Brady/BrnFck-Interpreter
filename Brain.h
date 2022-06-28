@@ -10,10 +10,90 @@ ascii of valid instructions
 , : 44 : getchar(*mem)
 */
 
+//https://stackoverflow.com/questions/252748/how-can-i-use-an-array-of-function-pointers
+
+static inline void inc(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	++*mem;
+	#ifdef DEBUG
+        printf("%u, %c",*exec,*exec);
+        #endif
+}
+static inline void dec(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	--*mem;
+        #ifdef DEBUG
+        printf("%u, %c",*exec,*exec);
+        #endif
+}
+static inline void right(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	++mem;
+        #ifdef DEBUG
+        ++m;
+        printf("%u, %c",*exec,*exec);
+        #endif
+}
+static inline void left(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	--mem;
+        #ifdef DEBUG
+        ++m;
+        printf("%u, %c",*exec,*exec);
+        #endif
+}
+static inline void open(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	#ifdef DEBUG
+	printf("%u, %c",*exec,*exec);
+	#endif
+	*stackTop=exec;
+	++stackTop;
+	if(!*mem){
+		++bridge;
+		while(bridge){
+			++exec;
+			bridge=bridge+(*exec==91)-(*exec==93);
+			}
+	}
+}
+static inline void close(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	#ifdef DEBUG
+	printf("%u, %c",*exec,*exec);
+	#endif
+	if(stackTop==loopStack){
+		printf("\n\n!!!!!!!!!!!!!!!!!!!!!!!\nUnballanced brackets\n!!!!!!!!!!!!!!!!!!!!!!!\n");
+		return 1;
+	}
+	--stackTop;
+	f(*mem)exec=*stackTop-1;
+}
+static inline void put(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	#ifdef DEBUG
+	printf("%u, %c : ",*exec,*exec);
+	#endif
+	putchar(*mem);
+}
+static inline void read(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop){
+	#ifdef DEBUG
+	printf("%u, %c : ",*exec,*exec);
+	#endif
+	*mem = getchar();
+}
+static inline (*op[8])(volatile unsigned int *mem, volatile char *exec,unsigned short int bridge, char** loopStack, char** stackTop)
+	
+#ifdef DEBUG
+unsigned int m;
+#endif
+	
 int Brfk(volatile char *exec, volatile unsigned int *mem){
+	
+    op[0] = inc;
+    op[1] = dec;
+    op[2] = right;
+    op[3] = left;
+    op[4] = open;
+    op[5] = close;
+    op[6] = put;
+    op[7] = read;
     #ifdef DEBUG
+    m=0;
     int start = exec;
-    unsigned int m=0;
     #endif
 	char** loopStack=(char**)calloc(256,sizeof(char*));
 	char** stackTop=loopStack;
@@ -22,71 +102,10 @@ int Brfk(volatile char *exec, volatile unsigned int *mem){
         #ifdef DEBUG
         printf("%u, %u, %u, ",exec-start, *mem, m);
         #endif
-        switch(*exec){
-            case 43:
-                ++*mem;
-                #ifdef DEBUG
-                printf("%u, %c",*exec,*exec);
-                #endif
-                break;
-            case 45:
-                --*mem;
-                #ifdef DEBUG
-                printf("%u, %c",*exec,*exec);
-                #endif
-                break;
-            case 62:
-                ++mem;
-                #ifdef DEBUG
-                ++m;
-                printf("%u, %c",*exec,*exec);
-                #endif
-                break;
-            case 60:
-                --mem;
-                #ifdef DEBUG
-                ++m;
-                printf("%u, %c",*exec,*exec);
-                #endif
-                break;
-            case 91:
-                #ifdef DEBUG
-                printf("%u, %c",*exec,*exec);
-                #endif
-				*stackTop=exec;
-				++stackTop;
-				if(!*mem){
-					++bridge;
-					while(bridge){
-						++exec;
-						bridge=bridge+(*exec==91)-(*exec==93);
-					}
-				}
-                break;
-            case 93:
-                #ifdef DEBUG
-                printf("%u, %c",*exec,*exec);
-                #endif
-				if(stackTop==loopStack){
-					printf("\n\n!!!!!!!!!!!!!!!!!!!!!!!\nUnballanced brackets\n!!!!!!!!!!!!!!!!!!!!!!!\n");
-					return 1;
-				}
-				--stackTop;
-				if(*mem)exec=*stackTop-1;
-                break;
-            case 46:
-                #ifdef DEBUG
-                printf("%u, %c : ",*exec,*exec);
-                #endif
-                putchar(*mem);
-                break;
-            case 44:
-                #ifdef DEBUG
-                printf("%u, %c : ",*exec,*exec);
-                #endif
-                *mem = getchar();
-                break;
-        }
+	/*
+        determin index
+	call op[index]
+	*/
         #ifdef DEBUG
         putchar('\n');
         #endif
